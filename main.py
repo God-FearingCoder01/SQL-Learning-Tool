@@ -17,42 +17,67 @@ def execute_query():
     if query_text.__contains__("DATABASE") : 
         try:
             db_conn = s.connect(query_text.split(" ").__getitem__(-1))
+            db_conn.close()
         except Exception as e:
             textbox_result.configure(state="normal")
             textbox_result.insert("0.0", type(e).__name__)
             textbox_result.insert("1.0", e)
             textbox_result.configure(state="disabled")
+            return 0
+        textbox_result.configure(state="normal")
+        textbox_result.insert("1.0", query_text.split(" ")[-1] + " database successfully created!")
+        textbox_result.configure(state="disabled")
     elif query_text.__contains__('CREATE TABLE') :
         try:
             db_conn = s.connect("school.db")
             db_cursor = db_conn.cursor()
             db_cursor.execute(query_text)
+            db_conn.close()
         except Exception as e:
             textbox_result.configure(state="normal")
             textbox_result.insert("0.0", type(e).__name__)
             textbox_result.insert("1.0", e)
             textbox_result.configure(state="disabled")
+            return 0
+        textbox_result.configure(state="normal")
+        textbox_result.insert("1.0", "Table " + query_text.split(" ")[-1] +" successfully created")
+    elif query_text.__contains__('INSERT') :
+        try:
+            db_conn = s.connect("school.db")
+            db_cursour = db_conn.execute(query_text)
+            db_conn.commit()
+            db_conn.close()
+        except Exception as e:
+            textbox_result.configure(status="normal")
+            textbox_result.insert("1.0", "\n" + type(e).__name__)
+            textbox_result.insert("2.0", "\n" + e)
+            textbox_result.configure(status="disabled")
+            return 0
+        textbox_result.configure(state="normal")
+        textbox_result.insert("1.0", "Your record was successfully inserted")
+        textbox_result.configure(state="disabled")
     elif query_text.__contains__('SELECT') :
         try:
             db_conn = s.connect("school.db")
             db_cursor = db_conn.cursor()
             rows = db_cursor.execute(query_text)
             if rows:
-                i = 1, textbox_result.configure(state="normal")
+                i = 1 
+                textbox_result.configure(state="normal")
                 for row in rows:
-                    textbox_result.insert(str(i)+".0", row + "\n")
+                    textbox_result.insert(str(i)+".0", str(row) + "\n")
                     i = i + 1
                 textbox_result.configure(state="disabled")
             else:
                 textbox_result.configure(state="normal")
                 textbox_result.insert("0.0", "No records found")
                 textbox_result.configure(state="disabled")
+            db_conn.close()
         except Exception as e:
             textbox_result.configure(state="normal")
             textbox_result.insert("1.0", type(e).__name__ + "\n")
             textbox_result.insert("2.0", e)
             textbox_result.configure(state="disabled")
-        
 
 
 app.grid_columnconfigure(0, weight=1)
