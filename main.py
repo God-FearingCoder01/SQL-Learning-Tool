@@ -1,10 +1,17 @@
 import sqlite3 as s
-import customtkinter as ct 
+import customtkinter as ct
+import pathlib as ptl
 
 app = ct.CTk()
 
 app.title("SQL-Learning-Tool")
 app.geometry("1400x800")
+
+dbs_created = ptl.Path('.').glob("*.db")
+cmb_dbs_values = ['---Select db here---']
+for db in dbs_created:
+    db_name = db.name
+    cmb_dbs_values.append(db_name)
 
 def clear():
     textbox_entry.delete("0.0", "end")
@@ -20,7 +27,14 @@ def execute_query():
     query_text = textbox_entry.get("0.0", "end-1c")
     if query_text.__contains__("DATABASE") : 
         try:
-            db_conn = s.connect(query_text.split(" ").__getitem__(-1))
+            query_db_name = query_text.split(" ").__getitem__(-1)
+            if query_db_name.endswith(".db"):
+                db_conn = s.connect(query_db_name)
+                cmb_dbs_values.append(query_db_name)
+            else:
+                textbox_result.configure(state="normal")
+                textbox_result.insert("1.0", "Please make sure that your database name ends in '.db'!")
+                textbox_result.configure(state="disabled")
             db_conn.close()
         except Exception as e:
             textbox_result.configure(state="normal")
@@ -106,23 +120,24 @@ app.grid_columnconfigure(2, weight=1)
 
 win_title = ct.CTkLabel(app, text="SQL Learning Tool", font=("Arial", 48, "bold"))
 win_title.grid(row=0, column=0, padx=20, pady=(30, 20), columnspan=3)
-entry_label = ct.CTkLabel(app, text="Enter your SQL here")
-entry_label.grid(row=1, column=0)
-result_label = ct.CTkLabel(app, text="Result Area")
-result_label.grid(row=1, column=1, columnspan=2)
+instruction_label = ct.CTkLabel(app, text="NB! All your databases should have a '.db' extention.", font=("Courier New", 16, "italic"))
+instruction_label.grid(row=1, column=0, sticky="nsew", columnspan=3)
+entry_label = ct.CTkLabel(app, text="Enter your SQL here", font=("Arial", 14))
+entry_label.grid(row=2, column=0)
+result_label = ct.CTkLabel(app, text="Result Area", font=("Segeo UI", 14, "bold"))
+result_label.grid(row=2, column=1, columnspan=2)
 textbox_entry = ct.CTkTextbox(app, width=300, height=500)
-textbox_entry.grid(row=2, column=0, sticky="nsew", padx=(20, 10))
+textbox_entry.grid(row=3, column=0, sticky="nsew", padx=(20, 10))
 textbox_result = ct.CTkTextbox(app, width=300, height=500)
-textbox_result.grid(row=2, column=1, sticky="nsew", padx=(10, 20), columnspan=2)
+textbox_result.grid(row=3, column=1, sticky="nsew", padx=(10, 20), columnspan=2)
 textbox_result.configure(state="disabled")
 run_button = ct.CTkButton(app, text="Run Query", command=execute_query)
-run_button.grid(row=3, column=0, pady=10)
-cmb_dbs = ct.CTkComboBox(app, width=200,)
-cmb_dbs.grid(row=3, column=1, sticky="e", padx=10)
+run_button.grid(row=4, column=0, pady=10)
+cmb_dbs = ct.CTkComboBox(app, width=200, values=cmb_dbs_values)
+cmb_dbs.grid(row=4, column=1, sticky="e", padx=10)
 cmb_tbls = ct.CTkComboBox(app, width=200)
-cmb_tbls.grid(row=3, column=2, sticky="w")
+cmb_tbls.grid(row=4, column=2, sticky="w")
 clear_button = ct.CTkButton(app, text="Clear", command=clear)
-clear_button.grid(row=4, column=0, pady=10)
-
+clear_button.grid(row=5, column=0, pady=10)
 
 app.mainloop()
