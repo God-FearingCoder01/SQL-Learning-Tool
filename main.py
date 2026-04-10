@@ -13,6 +13,8 @@ def clear():
     textbox_result.configure(state="disabled")
 
 def execute_query():
+    if textbox_result.get("0.0", "end") != "" :
+        textbox_result.configure("")
     query_text = textbox_entry.get("0.0", "end-1c")
     if query_text.__contains__("DATABASE") : 
         try:
@@ -78,6 +80,22 @@ def execute_query():
             textbox_result.insert("1.0", type(e).__name__ + "\n")
             textbox_result.insert("2.0", e)
             textbox_result.configure(state="disabled")
+    elif query_text.__contains__("UPDATE") :
+        try:
+            db_conn = s.connect("school.db")
+            db_cursor = db_conn.cursor()
+            db_cursor.execute(query_text)
+            db_conn.commit()
+            db_conn.close()
+        except Exception as e:
+            textbox_result.configure(state="normal")
+            textbox_result.insert("1.0", type(e).__name__)
+            textbox_result.insert("2.0", str(e) + "\n")
+            textbox_result.configure(state="disabled")
+            return 0
+        textbox_result.configure(state="normal")
+        textbox_result.insert("1.0", "Changes have been successfully saved")
+        textbox_result.configure(state="disabled")
 
 
 app.grid_columnconfigure(0, weight=1)
