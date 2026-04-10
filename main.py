@@ -14,7 +14,9 @@ def clear():
 
 def execute_query():
     if textbox_result.get("0.0", "end") != "" :
-        textbox_result.configure("")
+        textbox_result.configure(state="normal")
+        textbox_result.delete("0.0", "end")
+        textbox_result.configure(state="disabled")
     query_text = textbox_entry.get("0.0", "end-1c")
     if query_text.__contains__("DATABASE") : 
         try:
@@ -22,7 +24,7 @@ def execute_query():
             db_conn.close()
         except Exception as e:
             textbox_result.configure(state="normal")
-            textbox_result.insert("0.0", type(e).__name__)
+            textbox_result.insert("0.0", type(e).__name__ + "\n")
             textbox_result.insert("1.0", e)
             textbox_result.configure(state="disabled")
             return 0
@@ -37,7 +39,7 @@ def execute_query():
             db_conn.close()
         except Exception as e:
             textbox_result.configure(state="normal")
-            textbox_result.insert("0.0", type(e).__name__)
+            textbox_result.insert("0.0", type(e).__name__ + "\n")
             textbox_result.insert("1.0", e)
             textbox_result.configure(state="disabled")
             return 0
@@ -51,8 +53,8 @@ def execute_query():
             db_conn.close()
         except Exception as e:
             textbox_result.configure(status="normal")
-            textbox_result.insert("1.0", "\n" + type(e).__name__)
-            textbox_result.insert("2.0", "\n" + e)
+            textbox_result.insert("1.0", type(e).__name__ + "\n")
+            textbox_result.insert("2.0", e)
             textbox_result.configure(status="disabled")
             return 0
         textbox_result.configure(state="normal")
@@ -89,8 +91,8 @@ def execute_query():
             db_conn.close()
         except Exception as e:
             textbox_result.configure(state="normal")
-            textbox_result.insert("1.0", type(e).__name__)
-            textbox_result.insert("2.0", str(e) + "\n")
+            textbox_result.insert("1.0", type(e).__name__ + "\n")
+            textbox_result.insert("2.0", str(e))
             textbox_result.configure(state="disabled")
             return 0
         textbox_result.configure(state="normal")
@@ -115,7 +117,7 @@ textbox_result.grid(row=2, column=1, sticky="nsew", padx=(10, 20), columnspan=2)
 textbox_result.configure(state="disabled")
 run_button = ct.CTkButton(app, text="Run Query", command=execute_query)
 run_button.grid(row=3, column=0, pady=10)
-cmb_dbs = ct.CTkComboBox(app, width=140,)
+cmb_dbs = ct.CTkComboBox(app, width=200,)
 cmb_dbs.grid(row=3, column=1, sticky="e", padx=10)
 cmb_tbls = ct.CTkComboBox(app, width=200)
 cmb_tbls.grid(row=3, column=2, sticky="w")
