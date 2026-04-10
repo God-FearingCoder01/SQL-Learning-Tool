@@ -13,17 +13,41 @@ for db in dbs_created:
     db_name = db.name
     cmb_dbs_values.append(db_name)
 
+cmb_tbls_values = ['---Select db tbls here---']
+
+def get_db_tbls(selected_cmb_db_value):
+    if selected_cmb_db_value == '---Select db here---' : 
+        textbox_result.configure(state="normal")
+        textbox_result.insert("1.0", "PLEASE PICK A DATABASE FIRST!!!")
+        textbox_result.configure(state="disabled")
+        cmb_tbls.configure(values=['---Select db tbls here---'])
+    else:
+        tbls_to_add = []
+        selected_db_name = selected_cmb_db_value
+        db_conn = s.connect(selected_db_name)
+        db_cursor = db_conn.cursor()
+        tables = db_cursor.execute('SELECT name FROM sqlite_master WHERE type="table"')
+        for table in tables:
+            tbls_to_add.append(table[0])
+        cmb_tbls.configure(values=['---Select db tbls here---'])
+        cmb_tbls.configure(values=tbls_to_add)
+
+
 def clear():
     textbox_entry.delete("0.0", "end")
     textbox_result.configure(state="normal")
     textbox_result.delete("0.0", "end")
     textbox_result.configure(state="disabled")
+    cmb_tbls.configure(values=['---Select db tbl here----'])
+    cmb_dbs.configure(values=['---Select db here---'])
 
 def execute_query():
     if textbox_result.get("0.0", "end") != "" :
         textbox_result.configure(state="normal")
         textbox_result.delete("0.0", "end")
         textbox_result.configure(state="disabled")
+    if cmb_dbs.get() != "---Select db here---" :
+        chosen_db = cmb_dbs.get()
     query_text = textbox_entry.get("0.0", "end-1c")
     if query_text.__contains__("DATABASE") : 
         try:
@@ -47,7 +71,7 @@ def execute_query():
         textbox_result.configure(state="disabled")
     elif query_text.__contains__('CREATE TABLE') :
         try:
-            db_conn = s.connect("school.db")
+            db_conn = s.connect(chosen_db)
             db_cursor = db_conn.cursor()
             db_cursor.execute(query_text)
             db_conn.close()
@@ -61,7 +85,7 @@ def execute_query():
         textbox_result.insert("1.0", "Table " + query_text.split(" ")[-1] +" successfully created")
     elif query_text.__contains__('INSERT') :
         try:
-            db_conn = s.connect("school.db")
+            db_conn = s.connect(chosen_db)
             db_cursour = db_conn.execute(query_text)
             db_conn.commit()
             db_conn.close()
@@ -76,7 +100,7 @@ def execute_query():
         textbox_result.configure(state="disabled")
     elif query_text.__contains__('SELECT') :
         try:
-            db_conn = s.connect("school.db")
+            db_conn = s.connect(chosen_db)
             db_cursor = db_conn.cursor()
             rows = db_cursor.execute(query_text)
             if rows:
@@ -98,7 +122,7 @@ def execute_query():
             textbox_result.configure(state="disabled")
     elif query_text.__contains__("UPDATE") :
         try:
-            db_conn = s.connect("school.db")
+            db_conn = s.connect(chosen_db)
             db_cursor = db_conn.cursor()
             db_cursor.execute(query_text)
             db_conn.commit()
@@ -123,9 +147,9 @@ win_title.grid(row=0, column=0, padx=20, pady=(30, 20), columnspan=3)
 instruction_label = ct.CTkLabel(app, text="NB! All your databases should have a '.db' extention.", font=("Courier New", 16, "italic"))
 instruction_label.grid(row=1, column=0, sticky="nsew", columnspan=3)
 entry_label = ct.CTkLabel(app, text="Enter your SQL here", font=("Arial", 14))
-entry_label.grid(row=2, column=0)
+entry_label.grid(row=2, column=0, pady=(10, 0))
 result_label = ct.CTkLabel(app, text="Result Area", font=("Segeo UI", 14, "bold"))
-result_label.grid(row=2, column=1, columnspan=2)
+result_label.grid(row=2, column=1, columnspan=2, pady=(10, 0))
 textbox_entry = ct.CTkTextbox(app, width=300, height=500)
 textbox_entry.grid(row=3, column=0, sticky="nsew", padx=(20, 10))
 textbox_result = ct.CTkTextbox(app, width=300, height=500)
@@ -133,9 +157,9 @@ textbox_result.grid(row=3, column=1, sticky="nsew", padx=(10, 20), columnspan=2)
 textbox_result.configure(state="disabled")
 run_button = ct.CTkButton(app, text="Run Query", command=execute_query)
 run_button.grid(row=4, column=0, pady=10)
-cmb_dbs = ct.CTkComboBox(app, width=200, values=cmb_dbs_values)
+cmb_dbs = ct.CTkComboBox(app, width=200, values=cmb_dbs_values, command=get_db_tbls)
 cmb_dbs.grid(row=4, column=1, sticky="e", padx=10)
-cmb_tbls = ct.CTkComboBox(app, width=200)
+cmb_tbls = ct.CTkComboBox(app, width=200, values=cmb_tbls_values)
 cmb_tbls.grid(row=4, column=2, sticky="w")
 clear_button = ct.CTkButton(app, text="Clear", command=clear)
 clear_button.grid(row=5, column=0, pady=10)
