@@ -24,13 +24,33 @@ def execute_query():
             textbox_result.configure(state="disabled")
     elif query_text.__contains__('CREATE TABLE') :
         try:
-            db_conn.open()
+            db_conn = s.connect("school.db")
             db_cursor = db_conn.cursor()
             db_cursor.execute(query_text)
         except Exception as e:
             textbox_result.configure(state="normal")
             textbox_result.insert("0.0", type(e).__name__)
             textbox_result.insert("1.0", e)
+            textbox_result.configure(state="disabled")
+    elif query_text.__contains__('SELECT') :
+        try:
+            db_conn = s.connect("school.db")
+            db_cursor = db_conn.cursor()
+            rows = db_cursor.execute(query_text)
+            if rows:
+                i = 1, textbox_result.configure(state="normal")
+                for row in rows:
+                    textbox_result.insert(str(i)+".0", row + "\n")
+                    i = i + 1
+                textbox_result.configure(state="disabled")
+            else:
+                textbox_result.configure(state="normal")
+                textbox_result.insert("0.0", "No records found")
+                textbox_result.configure(state="disabled")
+        except Exception as e:
+            textbox_result.configure(state="normal")
+            textbox_result.insert("1.0", type(e).__name__ + "\n")
+            textbox_result.insert("2.0", e)
             textbox_result.configure(state="disabled")
         
 
@@ -56,7 +76,7 @@ cmb_dbs = ct.CTkComboBox(app, width=140,)
 cmb_dbs.grid(row=3, column=1, sticky="e", padx=10)
 cmb_tbls = ct.CTkComboBox(app, width=200)
 cmb_tbls.grid(row=3, column=2, sticky="w")
-clear_button = ct.CTkButton(app, text="Clear")
+clear_button = ct.CTkButton(app, text="Clear", command=clear)
 clear_button.grid(row=4, column=0, pady=10)
 
 
